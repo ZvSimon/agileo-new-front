@@ -3,13 +3,14 @@ import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TaskService } from '../../core/services/task.service';
 import { Task } from '../../core/models/task.model';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule, Location, DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-update-task',
   templateUrl: './update-task.component.html',
   standalone: true,
   imports: [ReactiveFormsModule, RouterModule, CommonModule],
+  providers: [DatePipe] // Ajouter DatePipe aux providers
 })
 export class UpdateTaskComponent implements OnChanges, OnInit {
   @Input() task: Task | null = null;
@@ -17,14 +18,21 @@ export class UpdateTaskComponent implements OnChanges, OnInit {
   updateForm: FormGroup;
   today: string;
 
-  constructor(private fb: FormBuilder, private taskService: TaskService, private router: Router, private route: ActivatedRoute, private location: Location) {
+  constructor(
+    private fb: FormBuilder, 
+    private taskService: TaskService, 
+    private router: Router, 
+    private route: ActivatedRoute, 
+    private location: Location,
+    private datePipe: DatePipe // Injecter DatePipe
+  ) {
     this.updateForm = this.fb.group({
       title: [''],
       description: [''],
       date: [''],
       status: [''],
     });
-    this.today = new Date().toUTCString().substring(0, 10);
+    this.today = this.datePipe.transform(new Date(), 'yyyy-MM-dd') || '';
   }
 
   ngOnInit(): void {
@@ -44,10 +52,8 @@ export class UpdateTaskComponent implements OnChanges, OnInit {
   }
 
   private formatDateForInput(dateString: string): string {
-    // Parse the date string as-is without adjusting for the local timezone
-    const date = new Date(dateString);
-    // Format the date as YYYY-MM-DD for the input field
-    return date.toISOString().split('T')[0];
+    // Utiliser DatePipe pour formater la date au format YYYY-MM-DD
+    return this.datePipe.transform(dateString, 'yyyy-MM-dd') || '';
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -63,25 +69,40 @@ export class UpdateTaskComponent implements OnChanges, OnInit {
   onSubmit() {
     if (this.task) {
       const formValue = this.updateForm.value;
-      // Parse the local date and adjust it to UTC
-      const localDate = new Date(formValue.date);
+  
+      // Convertir la date en objet Date et définir l'heure à 23:59:00.000
+      const selectedDate = new Date(formValue.date);
+      selectedDate.setHours(23, 59, 0, 0);
+  
+      // Formater la date en ISO avec fuseau horaire
+      const formattedDate = this.datePipe.transform(selectedDate, 'yyyy-MM-ddTHH:mm:ss.SSSZ');
+  
+      console.log('Date saisie par l\'utilisateur:', formValue.date);
+      console.log('Date ajustée à 23h59:', selectedDate);
+      console.log('Date formatée avec DatePipe:', formattedDate);
+  
       const updatedTask = { 
         ...this.task, 
         ...formValue,
-        date: localDate.toISOString() // Save as UTC
+        date: formattedDate || formValue.date
       };
+  
       this.taskService.updateTask(updatedTask).subscribe(
         (response) => {
           console.log('Tâche mise à jour avec succès:', response);
+          const displayDate = this.datePipe.transform(response.date, 'dd/MM/yyyy');
+          console.log('Date après mise à jour (formatée):', displayDate);
           this.taskUpdated.emit();
         },
         (error) => {
           console.error('Erreur lors de la mise à jour de la tâche:', error);
         }
       );
+  
       this.router.navigate(['/']);
     }
   }
+  
 
   // Fonction simple pour revenir en arrière
   goBack(): void {

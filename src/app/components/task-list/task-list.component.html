@@ -25,10 +25,10 @@
               </div>
             </td>
             <td>
-              <div class="badge" [ngClass]="{
-                'badge-warning': todo.status === 'à faire',
-                'badge-info': todo.status === 'en cours',
-                'badge-success': todo.status === 'réalisée'
+              <div [ngClass]="{
+                'warning': todo.status === 'à faire',
+                'info': todo.status === 'en cours',
+                'success': todo.status === 'réalisée'
               }">
                 {{ todo.status }}
               </div>

@@ -90,22 +90,4 @@ export class TaskListComponent implements OnInit {
       });
     }
   }
-
-  toggleEmojiPicker(task: Task) {
-    this.selectedTask = task;
-  }
-
-  onEmojiSelect(event: any, task: Task) {
-    this.service.updateTask(task).pipe(
-      catchError(error => {
-        this.errorMessage = 'Erreur lors de la mise à jour de l\'émoji';
-        console.error('Erreur:', error);
-        return of(null);
-      })
-    ).subscribe(response => {
-      if (response) {
-        console.log('Émoji mis à jour avec succès:', response);
-      }
-    });
-  }
 }
