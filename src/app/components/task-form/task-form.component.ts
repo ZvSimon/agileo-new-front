@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule, Location, DatePipe } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { TaskService } from '../../core/services/task.service';
+import { TaskService } from '../../repositories/services/task.service';
 import { RouterModule, Router } from '@angular/router';
-import { Task } from '../../core/models';
+import { Task } from '../../data';
 
 @Component({
   selector: 'app-task-form',

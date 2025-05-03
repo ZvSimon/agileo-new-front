@@ -1,10 +1,10 @@
 import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { TaskService } from '../../core/services/task.service';
+import { TaskService } from '../../repositories/services/task.service';
 import { Observable, catchError, of, tap } from 'rxjs';
 import { RouterModule } from '@angular/router';
-import { Task } from '../../core/models';
+import { Task } from '../../data';
 
 @Component({
   selector: 'app-task-list',
