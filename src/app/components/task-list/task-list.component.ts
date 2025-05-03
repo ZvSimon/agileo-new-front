@@ -5,6 +5,7 @@ import { TaskService } from '../../repositories/services/task.service';
 import { Observable, catchError, of, tap } from 'rxjs';
 import { RouterModule } from '@angular/router';
 import { Task } from '../../data';
+import {TasksFacade} from '../../facade/tasks.facade';
 
 @Component({
   selector: 'app-task-list',
@@ -20,6 +21,8 @@ export class TaskListComponent implements OnInit {
   errorMessage = '';
 
   private readonly service = inject(TaskService);
+  private readonly tasksFacade = inject(TasksFacade);
+  public readonly tasksListViewModel = this.tasksFacade.selectTasksList;
   private readonly fb = inject(FormBuilder);
   public today = new Date().toISOString().split('T')[0];
 
@@ -28,17 +31,7 @@ export class TaskListComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.loadTodos();
-  }
-
-  loadTodos(): void {
-    this.tasks$ = this.service.getTasks().pipe(
-      catchError(error => {
-        this.errorMessage = 'Erreur lors du chargement des tâches';
-        console.error('Erreur:', error);
-        return of([]);
-      })
-    );
+    this.tasksFacade.loadTasks();
   }
 
   addTodo(): void {
