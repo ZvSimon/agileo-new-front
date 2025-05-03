@@ -8,8 +8,8 @@ import { HttpClient } from '@angular/common/http';
 })
 
 export class TaskService {
-  private http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8000/api/tasks'; // ou endpoint Symfony
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = 'http://localhost:8000/api/tasks';
 
   public getTasks(): Observable<Task[]> {
     return this.http.get<Task[]>(this.apiUrl).pipe(shareReplay(1));
@@ -31,4 +31,3 @@ export class TaskService {
     return this.http.delete<Task>(`${this.apiUrl}/${id}`);
   }
 }
-// etc.

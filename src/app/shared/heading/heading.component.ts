@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, input } from '@angular/core';
+import {Component, input, OnInit} from '@angular/core';
+import {Theme} from '../../core/models/task.model';
 
 @Component({
   selector: 'app-heading',
@@ -8,8 +9,8 @@ import { Component, input } from '@angular/core';
   templateUrl: './heading.component.html',
   styles: ``
 })
-export class HeadingComponent {
-    theme: 'light' | 'dark' = 'light';
+export class HeadingComponent implements OnInit{
+    theme: Theme= 'light';
 
     ngOnInit() {
       const savedTheme = localStorage.getItem('theme') as 'light' | 'dark';
@@ -22,11 +23,11 @@ export class HeadingComponent {
       localStorage.setItem('theme', this.theme);
       this.applyTheme();
     }
-  
+
     applyTheme() {
       document.documentElement.setAttribute('data-theme', this.theme);
     }
-  
+
     isDark() {
       return this.theme === 'dark';
     }
