@@ -1,11 +1,10 @@
-import { Component, Input, Output, EventEmitter, signal, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient, } from '@angular/common/http';
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { Task } from '../../core/models/task.model';
 import { TaskService } from '../../core/services/task.service';
 import { Observable, catchError, of, tap } from 'rxjs';
 import { RouterModule } from '@angular/router';
+import { Task } from '../../core/models';
 
 @Component({
   selector: 'app-task-list',
@@ -23,14 +22,14 @@ export class TaskListComponent implements OnInit {
   private readonly service = inject(TaskService);
   private readonly fb = inject(FormBuilder);
   public today = new Date().toISOString().split('T')[0];
-  
+
   todoForm = this.fb.group({
     task: [''],
   });
 
   ngOnInit(): void {
     this.loadTodos();
-  }  
+  }
 
   loadTodos(): void {
     this.tasks$ = this.service.getTasks().pipe(
@@ -46,8 +45,8 @@ export class TaskListComponent implements OnInit {
     const taskValue = this.todoForm.value.task;
     if (!taskValue) return;
 
-    const newTodo: Task = { 
-      title: taskValue, 
+    const newTodo: Task = {
+      title: taskValue,
       description: '',
       date: new Date().toISOString(),
       status: 'à faire'
@@ -67,9 +66,9 @@ export class TaskListComponent implements OnInit {
   }
 
   updateTodo(task: Task): void {
-    const updatedTodo = { 
-      ...task, 
-      status: task.status === 'à faire' ? 'en cours' as const : 
+    const updatedTodo = {
+      ...task,
+      status: task.status === 'à faire' ? 'en cours' as const :
               task.status === 'en cours' ? 'réalisée' as const : 'à faire' as const
     };
     this.service.updateTask(updatedTodo).subscribe({
