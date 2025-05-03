@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import {Component, input, OnInit} from '@angular/core';
-import {Theme} from '../../core/models/task.model';
+import {Theme} from '../../data/models/task.model';
 
 @Component({
   selector: 'app-heading',

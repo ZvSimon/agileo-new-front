@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { TaskService } from '../../core/services/task.service';
-import { Task } from '../../core/models/task.model';
+import { TaskService } from '../../repositories/services/task.service';
+import { Task } from '../../data/models/task.model';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { CommonModule, Location, DatePipe } from '@angular/common';
 
@@ -19,10 +19,10 @@ export class UpdateTaskComponent implements OnChanges, OnInit {
   today: string;
 
   constructor(
-    private fb: FormBuilder, 
-    private taskService: TaskService, 
-    private router: Router, 
-    private route: ActivatedRoute, 
+    private fb: FormBuilder,
+    private taskService: TaskService,
+    private router: Router,
+    private route: ActivatedRoute,
     private location: Location,
     private datePipe: DatePipe // Injecter DatePipe
   ) {
@@ -42,7 +42,7 @@ export class UpdateTaskComponent implements OnChanges, OnInit {
         if (task) {
           this.task = task;
           const formattedDate = this.formatDateForInput(task.date);
-          this.updateForm.patchValue({ 
+          this.updateForm.patchValue({
             ...task,
             date: formattedDate
           });
@@ -59,7 +59,7 @@ export class UpdateTaskComponent implements OnChanges, OnInit {
   ngOnChanges(changes: SimpleChanges) {
     if (changes['task'] && this.task) {
       const formattedDate = this.formatDateForInput(this.task.date);
-      this.updateForm.patchValue({ 
+      this.updateForm.patchValue({
         ...this.task,
         date: formattedDate
       });
@@ -69,24 +69,24 @@ export class UpdateTaskComponent implements OnChanges, OnInit {
   onSubmit() {
     if (this.task) {
       const formValue = this.updateForm.value;
-  
+
       // Convertir la date en objet Date et définir l'heure à 23:59:00.000
       const selectedDate = new Date(formValue.date);
       selectedDate.setHours(23, 59, 0, 0);
-  
+
       // Formater la date en ISO avec fuseau horaire
       const formattedDate = this.datePipe.transform(selectedDate, 'yyyy-MM-ddTHH:mm:ss.SSSZ');
-  
+
       console.log('Date saisie par l\'utilisateur:', formValue.date);
       console.log('Date ajustée à 23h59:', selectedDate);
       console.log('Date formatée avec DatePipe:', formattedDate);
-  
-      const updatedTask = { 
-        ...this.task, 
+
+      const updatedTask = {
+        ...this.task,
         ...formValue,
         date: formattedDate || formValue.date
       };
-  
+
       this.taskService.updateTask(updatedTask).subscribe(
         (response) => {
           console.log('Tâche mise à jour avec succès:', response);
@@ -98,11 +98,11 @@ export class UpdateTaskComponent implements OnChanges, OnInit {
           console.error('Erreur lors de la mise à jour de la tâche:', error);
         }
       );
-  
+
       this.router.navigate(['/']);
     }
   }
-  
+
 
   // Fonction simple pour revenir en arrière
   goBack(): void {
