@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TaskService } from '../../core/services/task.service';
 import { Task } from '../../core/models/task.model';
-import { RouterModule, ActivatedRoute } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
+import { Observable, tap } from 'rxjs';
 
 @Component({
   selector: 'app-task-view',
@@ -11,31 +12,18 @@ import { RouterModule, ActivatedRoute } from '@angular/router';
   templateUrl: './task-view.component.html',
 })
 export class TaskViewComponent implements OnInit {
-  task: Task | null = null;
-  today: string;
+  task$: Observable<Task> | undefined;
 
-  constructor(
-    private taskService: TaskService,
-    private route: ActivatedRoute
-  ) {
-    this.today = new Date().toISOString().split('T')[0];
-  }
+  private taskService = inject(TaskService);
+  private route = inject(Router);
+  public today = new Date().toISOString().split('T')[0];
+  public readonly id = input.required<string>();
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.taskService.getTaskById(id).subscribe(
-        (task) => {
-          this.task = task;
-        },
-        (error) => {
-          console.error('Erreur lors du chargement de la tâche:', error);
-        }
-      );
-    }
+    this.task$ = this.taskService.getTaskById(this.id()).pipe(tap(console.log));
   }
 
   formatDate(dateString: string): string {
     return new Date(dateString).toLocaleDateString('fr-FR');
   }
-} 
+}

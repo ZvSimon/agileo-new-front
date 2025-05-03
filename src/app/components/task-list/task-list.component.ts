@@ -19,22 +19,18 @@ export class TaskListComponent implements OnInit {
   tasks$!: Observable<Task[]>;
   selectedTask: Task | null = null;
   errorMessage = '';
-  today: string;
 
   private readonly service = inject(TaskService);
   private readonly fb = inject(FormBuilder);
-
-  constructor() {
-    this.today = new Date().toISOString().split('T')[0];
-  }
-
+  public today = new Date().toISOString().split('T')[0];
+  
   todoForm = this.fb.group({
     task: [''],
   });
 
   ngOnInit(): void {
     this.loadTodos();
-  }
+  }  
 
   loadTodos(): void {
     this.tasks$ = this.service.getTasks().pipe(
@@ -49,16 +45,24 @@ export class TaskListComponent implements OnInit {
   addTodo(): void {
     const taskValue = this.todoForm.value.task;
     if (!taskValue) return;
-    
+
     const newTodo: Task = { 
       title: taskValue, 
       description: '',
       date: new Date().toISOString(),
       status: 'à faire'
     };
-    this.service.createTask(newTodo).subscribe(() => {
-      this.todoForm.reset();
-      this.loadTodos();
+    this.service.createTask(newTodo).subscribe({
+      next: (createdTask) => {
+        this.todoForm.reset();
+        this.tasks$ = this.tasks$.pipe(
+          tap(tasks => tasks.push(createdTask)) // Append the new task to the existing list
+        );
+      },
+      error: (error) => {
+        this.errorMessage = 'Erreur lors de la création de la tâche';
+        console.error('Erreur:', error);
+      }
     });
   }
 
@@ -68,25 +72,41 @@ export class TaskListComponent implements OnInit {
       status: task.status === 'à faire' ? 'en cours' as const : 
               task.status === 'en cours' ? 'réalisée' as const : 'à faire' as const
     };
-    this.service.updateTask(updatedTodo).pipe(
-      catchError(error => {
+    this.service.updateTask(updatedTodo).subscribe({
+      next: (updatedTask) => {
+        this.tasks$ = this.tasks$.pipe(
+          tap(tasks => {
+            const index = tasks.findIndex(t => t.id === updatedTask.id);
+            if (index !== -1) {
+              tasks[index] = updatedTask; // Update the task in the list
+            }
+          })
+        );
+      },
+      error: (error) => {
         this.errorMessage = 'Erreur lors de la mise à jour de la tâche';
         console.error('Erreur:', error);
-        return of(null);
-      })
-    ).subscribe(() => this.loadTodos());
+      }
+    });
   }
 
-  deleteTask(id: string): void {
+  deleteTodo(taskId: string): void {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?')) {
-      this.service.deleteTask(id).pipe(
-        catchError(error => {
+      this.service.deleteTask(taskId).subscribe({
+        next: () => {
+          this.tasks$ = this.tasks$.pipe(
+            tap(tasks => {
+              const index = tasks.findIndex(t => t.id === taskId);
+              if (index !== -1) {
+                tasks.splice(index, 1); // Remove the task from the list
+              }
+            })
+          );
+        },
+        error: (error) => {
           this.errorMessage = 'Erreur lors de la suppression de la tâche';
           console.error('Erreur:', error);
-          return of(null);
-        })
-      ).subscribe(() => {
-        this.loadTodos();
+        }
       });
     }
   }
