@@ -7,7 +7,7 @@ import { TaskService } from '../repositories/services/task.service';
 import {rxMethod} from '@ngrx/signals/rxjs-interop';
 import {pipe, tap} from 'rxjs';
 import {concatLatestFrom, tapResponse} from '@ngrx/operators';
-import {selectTasksList} from './todo.selector';
+import {selectTasksList} from './tasks.selector';
 
 type TaskStoreState = {
   tasks: ViewModelReducer<Task[]>;
@@ -21,7 +21,7 @@ const initialState: TaskStoreState = {
   }
 };
 
-export const TaskStore = signalStore(
+export const TasksStore = signalStore(
   withState(initialState),
   withMethods((store, taskService = inject(TaskService)) => {
 

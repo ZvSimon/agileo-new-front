@@ -1,12 +1,12 @@
 import {inject, Injectable} from '@angular/core';
-import {TaskStore} from '../store/task.store';
+import {TasksStore} from '../store/tasks.store';
 
 @Injectable({
   providedIn: 'root'
 })
 
 export class TasksFacade {
-  private readonly store = inject(TaskStore);
+  private readonly store = inject(TasksStore);
 
   public readonly selectTasksList = this.store.selectTasksList;
 
