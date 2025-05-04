@@ -1,4 +1,16 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges,
+  OnInit,
+  ChangeDetectionStrategy,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TaskService } from '../../repositories/services/task.service';
 import { Task } from '../../data/models/task.model';
@@ -10,22 +22,23 @@ import { CommonModule, Location, DatePipe } from '@angular/common';
   templateUrl: './update-task.component.html',
   standalone: true,
   imports: [ReactiveFormsModule, RouterModule, CommonModule],
-  providers: [DatePipe] // Ajouter DatePipe aux providers
+  providers: [DatePipe],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UpdateTaskComponent implements OnChanges, OnInit {
-  @Input() task: Task | null = null;
+  public task = signal<Task | null>(null);
+  private readonly fb = inject(FormBuilder);
+  private readonly taskService = inject(TaskService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly location = inject(Location);
+  private readonly datePipe = inject(DatePipe);
+  public readonly id = input.required<string>();
   @Output() taskUpdated = new EventEmitter<void>();
   updateForm: FormGroup;
   today: string;
 
-  constructor(
-    private fb: FormBuilder,
-    private taskService: TaskService,
-    private router: Router,
-    private route: ActivatedRoute,
-    private location: Location,
-    private datePipe: DatePipe // Injecter DatePipe
-  ) {
+  constructor() {
     this.updateForm = this.fb.group({
       title: [''],
       description: [''],
@@ -36,19 +49,7 @@ export class UpdateTaskComponent implements OnChanges, OnInit {
   }
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.taskService.getTaskById(id).subscribe(task => {
-        if (task) {
-          this.task = task;
-          const formattedDate = this.formatDateForInput(task.date);
-          this.updateForm.patchValue({
-            ...task,
-            date: formattedDate
-          });
-        }
-      });
-    }
+    this.taskService.getTaskById(this.id()).subscribe();
   }
 
   private formatDateForInput(dateString: string): string {
@@ -57,12 +58,15 @@ export class UpdateTaskComponent implements OnChanges, OnInit {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['task'] && this.task) {
-      const formattedDate = this.formatDateForInput(this.task.date);
-      this.updateForm.patchValue({
-        ...this.task,
-        date: formattedDate
-      });
+    if (changes['task']) {
+      const currentTask = this.task();
+      if (currentTask) {
+        const formattedDate = this.formatDateForInput(currentTask.date);
+        this.updateForm.patchValue({
+          ...this.task,
+          date: formattedDate,
+        });
+      }
     }
   }
 
@@ -75,22 +79,28 @@ export class UpdateTaskComponent implements OnChanges, OnInit {
       selectedDate.setHours(23, 59, 0, 0);
 
       // Formater la date en ISO avec fuseau horaire
-      const formattedDate = this.datePipe.transform(selectedDate, 'yyyy-MM-ddTHH:mm:ss.SSSZ');
+      const formattedDate = this.datePipe.transform(
+        selectedDate,
+        'yyyy-MM-ddTHH:mm:ss.SSSZ'
+      );
 
-      console.log('Date saisie par l\'utilisateur:', formValue.date);
+      console.log("Date saisie par l'utilisateur:", formValue.date);
       console.log('Date ajustée à 23h59:', selectedDate);
       console.log('Date formatée avec DatePipe:', formattedDate);
 
       const updatedTask = {
         ...this.task,
         ...formValue,
-        date: formattedDate || formValue.date
+        date: formattedDate || formValue.date,
       };
 
-      this.taskService.updateTask(updatedTask).subscribe(
+      this.taskService.updateTask(updatedTask, this.id()).subscribe(
         (response) => {
           console.log('Tâche mise à jour avec succès:', response);
-          const displayDate = this.datePipe.transform(response.date, 'dd/MM/yyyy');
+          const displayDate = this.datePipe.transform(
+            response.date,
+            'dd/MM/yyyy'
+          );
           console.log('Date après mise à jour (formatée):', displayDate);
           this.taskUpdated.emit();
         },
@@ -102,7 +112,6 @@ export class UpdateTaskComponent implements OnChanges, OnInit {
       this.router.navigate(['/']);
     }
   }
-
 
   // Fonction simple pour revenir en arrière
   goBack(): void {

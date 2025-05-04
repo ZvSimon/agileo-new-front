@@ -8,12 +8,20 @@ export const selectTasksList = (
   loadTasksList: Signal<ViewModelReducer<Task[], 'multiple'>>
 ): Signal<ViewModelSelector<Task[], 'multiple'>> =>
   computed(() => {
-    const state = loadTasksList();
-
     return {
-      data: state.data,
-      errors: state.errors,
-      hasError: state.requestState.load === RequestState.Error,
-      isPending: state.requestState.load === RequestState.Loading
+      data: loadTasksList().data,
+      errors: loadTasksList().errors,
+      hasError: {
+        load: loadTasksList().requestState['load'] === RequestState.Error,
+        edit: loadTasksList().requestState['edit'] === RequestState.Error,
+        add: loadTasksList().requestState['add'] === RequestState.Error,
+        delete: loadTasksList().requestState['delete'] === RequestState.Error,
+      },
+      isPending: {
+        load: loadTasksList().requestState['load'] === RequestState.Loading,
+        edit: loadTasksList().requestState['edit'] === RequestState.Loading,
+        add: loadTasksList().requestState['add'] === RequestState.Loading,
+        delete: loadTasksList().requestState['delete'] === RequestState.Loading,
+      },
     };
   });

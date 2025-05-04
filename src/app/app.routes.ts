@@ -3,11 +3,15 @@ import { TaskListComponent } from './components/task-list/task-list.component';
 import { TaskFormComponent } from './components/task-form/task-form.component';
 import { UpdateTaskComponent } from './components/update-task/update-task.component';
 import { TaskViewComponent } from './components/task-view/task-view.component';
-import {TasksStore} from './store/tasks.store';
+import { TasksStore } from './store/tasks.store';
 import { TasksFacade } from './facade/tasks.facade';
 
 export const routes: Routes = [
-  { path: '', component: TaskListComponent,providers:[TasksStore, TasksFacade] },
+  {
+    path: '',
+    component: TaskListComponent,
+    providers: [TasksStore, TasksFacade],
+  },
   { path: 'create', component: TaskFormComponent },
   { path: 'read/:id', component: TaskViewComponent },
   { path: 'update/:id', component: UpdateTaskComponent },

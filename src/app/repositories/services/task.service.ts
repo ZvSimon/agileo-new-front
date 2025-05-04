@@ -6,7 +6,6 @@ import { HttpClient } from '@angular/common/http';
 @Injectable({
   providedIn: 'root',
 })
-
 export class TaskService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = 'http://localhost:8000/api/tasks';
@@ -23,8 +22,8 @@ export class TaskService {
     return this.http.post<Task>(this.apiUrl, Task);
   }
 
-  public updateTask(Task: Task): Observable<Task> {
-    return this.http.put<Task>(`${this.apiUrl}/${Task.id}`, Task);
+  public updateTask(Task: Task, TaskId: string): Observable<Task> {
+    return this.http.put<Task>(`${this.apiUrl}/${TaskId}`, Task);
   }
 
   public deleteTask(id: string): Observable<Task> {
