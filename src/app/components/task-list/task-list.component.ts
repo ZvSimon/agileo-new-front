@@ -32,6 +32,7 @@ export class TaskListComponent implements OnInit {
 
   ngOnInit(): void {
     this.tasksFacade.loadTasks();
+    console.log(this.tasksListViewModel().data);
   }
 
   addTodo(): void {
