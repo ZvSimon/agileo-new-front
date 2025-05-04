@@ -156,11 +156,13 @@ export const TasksStore = signalStore(
     return {
       loadTasks: () => {
         tap(() => setLoadingState('load')),
-          taskService.getTasks().pipe(
-            tapResponse({
-              next: handleLoadSuccess,
-              error: handleLoadError,
-            })
+          switchMap(() =>
+            taskService.getTasks().pipe(
+              tapResponse({
+                next: handleLoadSuccess,
+                error: handleLoadError,
+              })
+            )
           );
       },
 
